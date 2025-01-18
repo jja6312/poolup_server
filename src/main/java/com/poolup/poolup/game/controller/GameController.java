@@ -1,7 +1,7 @@
 package com.poolup.poolup.game.controller;
 
 import com.poolup.poolup.game.application.GameService;
-import com.poolup.poolup.game.dto.request.GameRoomCreateRequest;
+import com.poolup.poolup.game.dto.request.GameRoomCreateRequestDTO;
 import com.poolup.poolup.game.dto.request.GameRoomJoinRequestDTO;
 import com.poolup.poolup.game.dto.request.TemporaryLoginRequestDTO;
 import com.poolup.poolup.game.dto.response.GameRoomCreateResponseDTO;
@@ -37,9 +37,9 @@ public class GameController {
     // 2. 게임 방 관련
     // 2-1. 방 생성
     @PostMapping("/room")
-    public ResponseEntity<GameRoomCreateResponseDTO> createRoom(@RequestBody GameRoomCreateRequest gameRoomRequestDTO) {
+    public ResponseEntity<GameRoomCreateResponseDTO> createRoom(@RequestBody GameRoomCreateRequestDTO gameRoomRequestDTO) {
         // roomId(UUID == 초대링크) 반환
-        return ResponseEntity.ok().body(gameService.createRoom(gameRoomRequestDTO.memberId()));
+        return ResponseEntity.ok().body(gameService.createRoom(gameRoomRequestDTO.getMemberId()));
     }
 
     // 2-2. 방 참가
