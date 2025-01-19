@@ -1,5 +1,6 @@
 ```sql
 
+
 -- 1. Member 테이블에 데이터 삽입
 INSERT INTO Member (name, email, role, auth_provider, provider_id, profile_image_url, created_at, modified_at)
 VALUES 
