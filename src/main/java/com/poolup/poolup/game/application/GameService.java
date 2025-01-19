@@ -1,9 +1,9 @@
 package com.poolup.poolup.game.application;
 
 import com.poolup.poolup.game.domain.model.RoomStatus;
-import com.poolup.poolup.game.dto.response.GameRoomCreateResponseDTO;
-import com.poolup.poolup.game.dto.request.TemporaryLoginRequestDTO;
-import com.poolup.poolup.game.dto.response.TemporaryLoginResponseDTO;
+import com.poolup.poolup.game.controller.dto.response.GameRoomCreateResponse;
+import com.poolup.poolup.game.controller.dto.request.TemporaryLoginRequest;
+import com.poolup.poolup.game.controller.dto.response.TemporaryLoginResponse;
 import com.poolup.poolup.game.domain.model.GameRoom;
 import com.poolup.poolup.game.domain.repository.GameRoomRepository;
 import com.poolup.poolup.game.infrastructure.TemporaryMemberRepository;
@@ -11,7 +11,6 @@ import com.poolup.poolup.member.domain.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
 import java.util.UUID;
 
 
@@ -28,12 +27,12 @@ public class GameService {
 
     // 1. 멤버 관련 로직
     // 1-1. 임시 로그인
-    public TemporaryLoginResponseDTO temporaryLogin(TemporaryLoginRequestDTO temporaryLoginRequestDTO) {
+    public TemporaryLoginResponse temporaryLogin(TemporaryLoginRequest temporaryLoginRequest) {
         // 이메일을 통해 멤버를 가져온다
-        Member member = temporaryMemberRepository.findByEmail(temporaryLoginRequestDTO.getEmail());
+        Member member = temporaryMemberRepository.findByEmail(temporaryLoginRequest.getEmail());
 
         // 응답 DTO에 id, email, name을 담아 넘긴다.
-        return TemporaryLoginResponseDTO.builder()
+        return TemporaryLoginResponse.builder()
                 .id(member.getId())
                 .name(member.getName())
                 .email(member.getEmail())
@@ -41,7 +40,7 @@ public class GameService {
     }
 
     // 2. 게임 관련 로직
-    public GameRoomCreateResponseDTO createRoom(Long player1Id) {
+    public GameRoomCreateResponse createRoom(Long player1Id) {
         // player1이 있는지 확인
         Member member = temporaryMemberRepository.findById(player1Id)
                 .orElseThrow(()-> new IllegalArgumentException("멤버 정보를 찾을 수 없습니다.")); // 없다면 예외 발생
@@ -58,10 +57,10 @@ public class GameService {
         // 방을 인메모리에 ConcurrentHashMap으로 저장한다.
         gameRoomRepository.save(gameRoom);
 
-        return GameRoomCreateResponseDTO.builder()
+        return GameRoomCreateResponse.builder()
                 .roomId(roomId)
                 .roomStatus(RoomStatus.READY)
-                .player1P(GameRoomCreateResponseDTO.Player1P.builder()
+                .player1P(GameRoomCreateResponse.Player1P.builder()
                         .memberId(member.getId())
                         .name(member.getName())
                         .build())

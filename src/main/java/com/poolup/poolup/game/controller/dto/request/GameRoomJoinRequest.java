@@ -1,4 +1,4 @@
-package com.poolup.poolup.game.dto.request;
+package com.poolup.poolup.game.controller.dto.request;
 
 
 import lombok.Builder;
@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class GameRoomJoinRequestDTO {
+public class GameRoomJoinRequest {
     private Long memberId;
     private String roomId;
 }

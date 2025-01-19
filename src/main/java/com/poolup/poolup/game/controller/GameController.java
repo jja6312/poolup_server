@@ -1,12 +1,12 @@
 package com.poolup.poolup.game.controller;
 
 import com.poolup.poolup.game.application.GameService;
-import com.poolup.poolup.game.dto.request.GameRoomCreateRequestDTO;
-import com.poolup.poolup.game.dto.request.GameRoomJoinRequestDTO;
-import com.poolup.poolup.game.dto.request.TemporaryLoginRequestDTO;
-import com.poolup.poolup.game.dto.response.GameRoomCreateResponseDTO;
-import com.poolup.poolup.game.dto.response.GameRoomJoinResponseDTO;
-import com.poolup.poolup.game.dto.response.TemporaryLoginResponseDTO;
+import com.poolup.poolup.game.controller.dto.request.GameRoomCreateRequest;
+import com.poolup.poolup.game.controller.dto.request.GameRoomJoinRequest;
+import com.poolup.poolup.game.controller.dto.request.TemporaryLoginRequest;
+import com.poolup.poolup.game.controller.dto.response.GameRoomCreateResponse;
+import com.poolup.poolup.game.controller.dto.response.GameRoomJoinResponse;
+import com.poolup.poolup.game.controller.dto.response.TemporaryLoginResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,25 +28,25 @@ public class GameController {
 
     // 1. 임시 로그인 메서드 (비밀번호 없이 email로 member조회)
     @PostMapping("/temporaryLogin")
-    public ResponseEntity<TemporaryLoginResponseDTO> temporaryLogin(@RequestBody TemporaryLoginRequestDTO temporaryLoginRequestDTO) {
+    public ResponseEntity<TemporaryLoginResponse> temporaryLogin(@RequestBody TemporaryLoginRequest temporaryLoginRequest) {
         // 응답 DTO 형식에 맞게 사용자 정보를 반환
-        return ResponseEntity.ok(gameService.temporaryLogin(temporaryLoginRequestDTO));
+        return ResponseEntity.ok(gameService.temporaryLogin(temporaryLoginRequest));
     }
 
 
     // 2. 게임 방 관련
     // 2-1. 방 생성
     @PostMapping("/room")
-    public ResponseEntity<GameRoomCreateResponseDTO> createRoom(@RequestBody GameRoomCreateRequestDTO gameRoomRequestDTO) {
+    public ResponseEntity<GameRoomCreateResponse> createRoom(@RequestBody GameRoomCreateRequest gameRoomRequest) {
         // roomId(UUID == 초대링크) 반환
-        return ResponseEntity.ok().body(gameService.createRoom(gameRoomRequestDTO.getMemberId()));
+        return ResponseEntity.ok().body(gameService.createRoom(gameRoomRequest.getMemberId()));
     }
 
     // 2-2. 방 참가
     @PostMapping("/room/join")
-    public ResponseEntity<GameRoomJoinResponseDTO> joinRoom(@RequestBody GameRoomJoinRequestDTO gameRoomJoinRequestDTO) {
-        gameService.joinRoom(gameRoomJoinRequestDTO.getRoomId(), gameRoomJoinRequestDTO.getMemberId());
-        return ResponseEntity.ok(GameRoomJoinResponseDTO.builder()
+    public ResponseEntity<GameRoomJoinResponse> joinRoom(@RequestBody GameRoomJoinRequest gameRoomJoinRequest) {
+        gameService.joinRoom(gameRoomJoinRequest.getRoomId(), gameRoomJoinRequest.getMemberId());
+        return ResponseEntity.ok(GameRoomJoinResponse.builder()
                     .message("방 참가 성공")
                     .build());
     }

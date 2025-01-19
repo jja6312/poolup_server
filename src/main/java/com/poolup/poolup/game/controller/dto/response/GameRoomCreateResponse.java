@@ -1,4 +1,4 @@
-package com.poolup.poolup.game.dto.response;
+package com.poolup.poolup.game.controller.dto.response;
 
 import com.poolup.poolup.game.domain.model.RoomStatus;
 import lombok.Builder;
@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class GameRoomCreateResponseDTO {
+public class GameRoomCreateResponse {
     private final String roomId;
     private final RoomStatus roomStatus;
     private final Player1P player1P;
