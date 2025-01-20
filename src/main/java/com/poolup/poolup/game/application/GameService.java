@@ -28,8 +28,11 @@ public class GameService {
     // 1. 멤버 관련 로직
     // 1-1. 임시 로그인
     public TemporaryLoginResponse temporaryLogin(TemporaryLoginRequest temporaryLoginRequest) {
+        System.out.println("**email:"+temporaryLoginRequest.getEmail());
         // 이메일을 통해 멤버를 가져온다
         Member member = temporaryMemberRepository.findByEmail(temporaryLoginRequest.getEmail());
+
+        System.out.println("member:"+member);
 
         // 응답 DTO에 id, email, name을 담아 넘긴다.
         return TemporaryLoginResponse.builder()

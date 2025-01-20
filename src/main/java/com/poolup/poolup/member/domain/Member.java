@@ -45,5 +45,22 @@ public class Member extends BaseEntity {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Exam> exams;
 
-
+    @Override
+    public String toString() {
+        return "Member{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", email='" + email + '\'' +
+                ", role='" + role + '\'' +
+                ", authProvider='" + authProvider + '\'' +
+                ", providerId='" + providerId + '\'' +
+                ", profileImageUrl='" + profileImageUrl + '\'' +
+                ", memberGameResult=" + memberGameResult +
+                ", interestSubjects=" + interestSubjects +
+                ", MemberInterviews=" + MemberInterviews +
+                ", memberInterviewActions=" + memberInterviewActions +
+                ", memberExamStatistics=" + memberExamStatistics +
+                ", exams=" + exams +
+                '}';
+    }
 }
