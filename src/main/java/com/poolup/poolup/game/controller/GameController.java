@@ -39,16 +39,13 @@ public class GameController {
     @PostMapping("/room")
     public ResponseEntity<GameRoomCreateResponse> createRoom(@RequestBody GameRoomCreateRequest gameRoomRequest) {
         // roomId(UUID == 초대링크) 반환
-        return ResponseEntity.ok().body(gameService.createRoom(gameRoomRequest.getMemberId()));
+        return ResponseEntity.ok(gameService.createRoom(gameRoomRequest.getMemberId()));
     }
 
     // 2-2. 방 참가
     @PostMapping("/room/join")
     public ResponseEntity<GameRoomJoinResponse> joinRoom(@RequestBody GameRoomJoinRequest gameRoomJoinRequest) {
-        gameService.joinRoom(gameRoomJoinRequest.getRoomId(), gameRoomJoinRequest.getMemberId());
-        return ResponseEntity.ok(GameRoomJoinResponse.builder()
-                    .message("방 참가 성공")
-                    .build());
+        return ResponseEntity.ok(gameService.joinRoom(gameRoomJoinRequest.getRoomId(), gameRoomJoinRequest.getMemberId()));
     }
 }
 

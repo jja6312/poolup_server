@@ -1,5 +1,7 @@
 package com.poolup.poolup.game.application;
 
+import com.poolup.poolup.game.controller.dto.response.GameRoomJoinResponse;
+import com.poolup.poolup.game.controller.dto.response.GameWebSocketResponse;
 import com.poolup.poolup.game.domain.model.RoomStatus;
 import com.poolup.poolup.game.controller.dto.response.GameRoomCreateResponse;
 import com.poolup.poolup.game.controller.dto.request.TemporaryLoginRequest;
@@ -11,6 +13,7 @@ import com.poolup.poolup.member.domain.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.UUID;
 
 
@@ -43,40 +46,59 @@ public class GameService {
     }
 
     // 2. 게임 관련 로직
+    // 2-1. 방 생성
     public GameRoomCreateResponse createRoom(Long player1Id) {
-        // player1이 있는지 확인
-        Member member = temporaryMemberRepository.findById(player1Id)
-                .orElseThrow(()-> new IllegalArgumentException("멤버 정보를 찾을 수 없습니다.")); // 없다면 예외 발생
+        Member player1 = temporaryMemberRepository.findById(player1Id)
+                .orElseThrow(() -> new IllegalArgumentException("플레이어 정보를 찾을 수 없습니다."));
 
-        // 방ID : UUID로 생성
         String roomId = UUID.randomUUID().toString();
-
-        // 게임방은 roomID, 플레이어1Id로 만든다.
         GameRoom gameRoom = GameRoom.builder()
                 .roomId(roomId)
-                .player1Id(member.getId())
+                .player1Id(player1.getId())
                 .build();
 
-        // 방을 인메모리에 ConcurrentHashMap으로 저장한다.
         gameRoomRepository.save(gameRoom);
 
         return GameRoomCreateResponse.builder()
                 .roomId(roomId)
-                .roomStatus(RoomStatus.READY)
+                .roomStatus(RoomStatus.WAITING)
                 .player1P(GameRoomCreateResponse.Player1P.builder()
-                        .memberId(member.getId())
-                        .name(member.getName())
+                        .memberId(player1.getId())
+                        .name(player1.getName())
                         .build())
                 .build();
     }
 
-    // 3. 게임 방 참가
-    public void joinRoom(String roomId, Long player2Id) {
-        //게임방 아이디(==초대코드) 조회
-        GameRoom gameRoom = gameRoomRepository.findByRoomId(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("방이 존재하지 않습니다.")); //방이 없으면 예외처리
 
-        // 방이 있으면 게임 방에 플레이어2 참가
-        gameRoom.addPlayer(player2Id);
+    // 3. 게임 방 참가
+    // 2-2. 방 참가
+    public GameRoomJoinResponse joinRoom(String roomId, Long player2Id) {
+        GameRoom gameRoom = gameRoomRepository.findByRoomId(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("방이 존재하지 않습니다."));
+
+        Member player2 = temporaryMemberRepository.findById(player2Id)
+                .orElseThrow(() -> new IllegalArgumentException("플레이어 정보를 찾을 수 없습니다."));
+
+        gameRoom.addPlayer(player2.getId());
+
+        Member player1 = Optional.ofNullable(gameRoom.getPlayer1Id())
+                .map(player1Id -> temporaryMemberRepository.findById(player1Id)
+                        .orElseThrow(() -> new IllegalArgumentException("플레이어 정보를 찾을 수 없습니다.")))
+                .orElse(null);
+
+        return GameRoomJoinResponse.builder()
+                .roomId(roomId)
+                .status(RoomStatus.READY.name())
+                .player1P(player1 != null ? GameRoomJoinResponse.Player.builder()
+                        .memberId(player1.getId())
+                        .name(player1.getName())
+                        .build() : null)
+                .player2P(GameRoomJoinResponse.Player.builder()
+                        .memberId(player2.getId())
+                        .name(player2.getName())
+                        .build())
+                .message("방 참가 성공")
+                .build();
     }
+
 }
