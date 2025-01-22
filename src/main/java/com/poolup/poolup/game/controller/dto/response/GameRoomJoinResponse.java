@@ -10,7 +10,6 @@ public class GameRoomJoinResponse {
     private String status;
     private Player player1P;
     private Player player2P;
-    private String message;
 
     @Getter
     @Builder

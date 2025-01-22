@@ -1,18 +1,21 @@
 package com.poolup.poolup.game.application;
 
-import com.poolup.poolup.game.controller.dto.response.GameRoomJoinResponse;
-import com.poolup.poolup.game.controller.dto.response.GameWebSocketResponse;
+import com.poolup.poolup.game.controller.dto.response.*;
 import com.poolup.poolup.game.domain.model.RoomStatus;
-import com.poolup.poolup.game.controller.dto.response.GameRoomCreateResponse;
 import com.poolup.poolup.game.controller.dto.request.TemporaryLoginRequest;
-import com.poolup.poolup.game.controller.dto.response.TemporaryLoginResponse;
 import com.poolup.poolup.game.domain.model.GameRoom;
 import com.poolup.poolup.game.domain.repository.GameRoomRepository;
 import com.poolup.poolup.game.infrastructure.TemporaryMemberRepository;
+import com.poolup.poolup.game.infrastructure.TemporaryProblemRepository;
 import com.poolup.poolup.member.domain.Member;
+import com.poolup.poolup.problem.domain.Problem;
+import com.poolup.poolup.problem.enums.ProblemType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -27,6 +30,7 @@ import java.util.UUID;
 public class GameService {
     private final GameRoomRepository gameRoomRepository;
     private final TemporaryMemberRepository temporaryMemberRepository;
+    private final TemporaryProblemRepository temporaryProblemRepository;
 
     // 1. 멤버 관련 로직
     // 1-1. 임시 로그인
@@ -51,14 +55,19 @@ public class GameService {
         Member player1 = temporaryMemberRepository.findById(player1Id)
                 .orElseThrow(() -> new IllegalArgumentException("플레이어 정보를 찾을 수 없습니다."));
 
+        // 방 식별번호(==UUID) 생성
         String roomId = UUID.randomUUID().toString();
+
+        // 게임방 생성
         GameRoom gameRoom = GameRoom.builder()
                 .roomId(roomId)
                 .player1Id(player1.getId())
                 .build();
 
+        // 인메모리에 저장(DB아님.)
         gameRoomRepository.save(gameRoom);
 
+        // 화면에 뿌릴 정보 반환
         return GameRoomCreateResponse.builder()
                 .roomId(roomId)
                 .roomStatus(RoomStatus.WAITING)
@@ -70,35 +79,55 @@ public class GameService {
     }
 
 
-    // 3. 게임 방 참가
     // 2-2. 방 참가
     public GameRoomJoinResponse joinRoom(String roomId, Long player2Id) {
+        // 실제로 존재하는 방인지 찾기
         GameRoom gameRoom = gameRoomRepository.findByRoomId(roomId)
                 .orElseThrow(() -> new IllegalArgumentException("방이 존재하지 않습니다."));
 
+        // 실제로 존재하는 player2인지 찾기
         Member player2 = temporaryMemberRepository.findById(player2Id)
                 .orElseThrow(() -> new IllegalArgumentException("플레이어 정보를 찾을 수 없습니다."));
 
-        gameRoom.addPlayer(player2.getId());
 
-        Member player1 = Optional.ofNullable(gameRoom.getPlayer1Id())
-                .map(player1Id -> temporaryMemberRepository.findById(player1Id)
-                        .orElseThrow(() -> new IllegalArgumentException("플레이어 정보를 찾을 수 없습니다.")))
-                .orElse(null);
+        // 실제로 존재하는 player1인지 찾기
+        Member player1 = temporaryMemberRepository.findById(gameRoom.getPlayer1Id())
+                .orElseThrow(() -> new IllegalArgumentException("플레이어 정보를 찾을 수 없습니다. ID: " + gameRoom.getPlayer1Id()));
+
+        // 인메모리 게임방에 참가시키기(DB엔 게임관련해서 저장안할예정. 성능때문에.)
+        gameRoom.addPlayer(player2.getId());
 
         return GameRoomJoinResponse.builder()
                 .roomId(roomId)
                 .status(RoomStatus.READY.name())
-                .player1P(player1 != null ? GameRoomJoinResponse.Player.builder()
+                .player1P(GameRoomJoinResponse.Player.builder()
                         .memberId(player1.getId())
                         .name(player1.getName())
-                        .build() : null)
+                        .build())
                 .player2P(GameRoomJoinResponse.Player.builder()
                         .memberId(player2.getId())
                         .name(player2.getName())
                         .build())
-                .message("방 참가 성공")
                 .build();
     }
 
+
+    public TemporaryGetProblemsResponse getTemporaryProblems(int limit) {//카드 가져오기
+        // limit개수만큼(15개) 카드 가져오기
+        Pageable pageable = PageRequest.of(0, limit);
+        List<Problem> problems = temporaryProblemRepository.findByProblemTypeOrderByCreatedAtDesc(ProblemType.SUBJECTIVE, pageable);
+
+        // List<Problem> -> List<TemporaryGetProblemsResponse.ProblemCard> 형태로 stream을통해 변경
+        List<TemporaryGetProblemsResponse.ProblemCard> problemCards = problems.stream()
+                .map(problem -> TemporaryGetProblemsResponse.ProblemCard.builder()
+                        .id(problem.getId())
+                        .question(problem.getQuestion())
+                        .answer(problem.getAnswer())
+                        .build())
+                .toList();
+
+        return TemporaryGetProblemsResponse.builder()
+                .problemCards(problemCards)
+                .build();
+    }
 }

@@ -7,12 +7,10 @@ import com.poolup.poolup.game.controller.dto.request.TemporaryLoginRequest;
 import com.poolup.poolup.game.controller.dto.response.GameRoomCreateResponse;
 import com.poolup.poolup.game.controller.dto.response.GameRoomJoinResponse;
 import com.poolup.poolup.game.controller.dto.response.TemporaryLoginResponse;
+import com.poolup.poolup.game.controller.dto.response.TemporaryGetProblemsResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /*
  * 임시로그인, 카드 관련 controller 역할을 수행하는 계층.
@@ -46,6 +44,12 @@ public class GameController {
     @PostMapping("/room/join")
     public ResponseEntity<GameRoomJoinResponse> joinRoom(@RequestBody GameRoomJoinRequest gameRoomJoinRequest) {
         return ResponseEntity.ok(gameService.joinRoom(gameRoomJoinRequest.getRoomId(), gameRoomJoinRequest.getMemberId()));
+    }
+
+    // 3. 임시 카드 불러오기 메서드
+    @GetMapping("/problems")
+    public ResponseEntity<TemporaryGetProblemsResponse> getTemporaryProblems(@RequestParam(defaultValue = "15") int limit){
+        return ResponseEntity.ok(gameService.getTemporaryProblems(limit));
     }
 }
 
