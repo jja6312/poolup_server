@@ -16,5 +16,6 @@ public class GameRoomJoinResponse {
     public static class Player {
         private Long memberId;
         private String name;
+        private int score;
     }
 }

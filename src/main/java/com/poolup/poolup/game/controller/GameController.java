@@ -40,14 +40,8 @@ public class GameController {
         return ResponseEntity.ok(gameService.createRoom(gameRoomRequest.getMemberId()));
     }
 
-    // 2-2. 방 참가
-    @PostMapping("/room/join")
-    public ResponseEntity<GameRoomJoinResponse> joinRoom(@RequestBody GameRoomJoinRequest gameRoomJoinRequest) {
-        return ResponseEntity.ok(gameService.joinRoom(gameRoomJoinRequest.getRoomId(), gameRoomJoinRequest.getMemberId()));
-    }
-
     // 3. 임시 카드 불러오기 메서드
-    @GetMapping("/problems")
+    @GetMapping("/temporaryProblems")
     public ResponseEntity<TemporaryGetProblemsResponse> getTemporaryProblems(@RequestParam(defaultValue = "15") int limit){
         return ResponseEntity.ok(gameService.getTemporaryProblems(limit));
     }

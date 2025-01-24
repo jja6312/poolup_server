@@ -7,7 +7,7 @@ import lombok.Getter;
 @Getter
 @Builder
 public class TemporaryLoginResponse {
-    private Long id;
+    private Long memberId;
     private String name;
     private String email;
 

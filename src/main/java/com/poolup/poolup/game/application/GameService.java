@@ -1,5 +1,6 @@
 package com.poolup.poolup.game.application;
 
+import com.poolup.poolup.game.controller.dto.request.GameCardSelectionRequest;
 import com.poolup.poolup.game.controller.dto.response.*;
 import com.poolup.poolup.game.domain.model.RoomStatus;
 import com.poolup.poolup.game.controller.dto.request.TemporaryLoginRequest;
@@ -35,15 +36,11 @@ public class GameService {
     // 1. 멤버 관련 로직
     // 1-1. 임시 로그인
     public TemporaryLoginResponse temporaryLogin(TemporaryLoginRequest temporaryLoginRequest) {
-        System.out.println("**email:"+temporaryLoginRequest.getEmail());
         // 이메일을 통해 멤버를 가져온다
         Member member = temporaryMemberRepository.findByEmail(temporaryLoginRequest.getEmail());
-
-        System.out.println("member:"+member);
-
         // 응답 DTO에 id, email, name을 담아 넘긴다.
         return TemporaryLoginResponse.builder()
-                .id(member.getId())
+                .memberId(member.getId())
                 .name(member.getName())
                 .email(member.getEmail())
                 .build();
@@ -112,6 +109,7 @@ public class GameService {
     }
 
 
+    // 2-3. 게임 시작시, 문제 카드쌍들 가져오기
     public TemporaryGetProblemsResponse getTemporaryProblems(int limit) {//카드 가져오기
         // limit개수만큼(15개) 카드 가져오기
         Pageable pageable = PageRequest.of(0, limit);
@@ -128,6 +126,31 @@ public class GameService {
 
         return TemporaryGetProblemsResponse.builder()
                 .problemCards(problemCards)
+                .build();
+    }
+
+    // 2-4. 한 플레이어가 프론트에서 정답쌍을 골랐을 때, 이미 정답처리 된 문제인지 확인 및 점수 처리
+    public GameCardResultResponse processCardSubmission(GameCardSelectionRequest request) {
+        GameRoom gameRoom = gameRoomRepository.findByRoomId(request.getRoomId())
+                .orElseThrow(() -> new IllegalArgumentException("방을 찾을 수 없습니다."));
+
+        // 이미 정답처리 되었는지 확인
+        if (gameRoom.isProblemAlreadySolved(request.getProblemNumber())) { // 이미정답처리되었다면
+            return GameCardResultResponse.builder() //변경된 정보 없이 바로 반환시킨다.
+                    .problemNumber(request.getProblemNumber())
+                    .score1P(gameRoom.getPlayer1Score())
+                    .score2P(gameRoom.getPlayer2Score())
+                    .build();
+        }
+
+        // 아직 정답처리안되었다면,
+        gameRoom.markProblemAsSolved(request.getProblemNumber());//문제를 정답으로 처리
+        gameRoom.incrementScore(request.getPlayerId());//스코어 반영
+
+        return GameCardResultResponse.builder()
+                .problemNumber(request.getProblemNumber())
+                .score1P(gameRoom.getPlayer1Score())
+                .score2P(gameRoom.getPlayer2Score())
                 .build();
     }
 }
