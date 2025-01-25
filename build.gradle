@@ -34,9 +34,9 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     // websocket: 정지안
-    implementation 'org.springframework.boot:spring-boot-starter-websocket'
-    implementation 'org.webjars:sockjs-client:1.5.1'
-    implementation 'org.webjars:stomp-websocket:2.3.4'
+    implementation 'org.springframework.boot:spring-boot-starter-websocket' // spring 웹소켓
+    implementation 'org.webjars:sockjs-client:1.5.1' // 쉬운 웹소켓 구현을 위한 socketJS
+    implementation 'org.webjars:stomp-websocket:2.3.4' // pub-sub 구조 양방향통신을 위한 STOMP
 }
 
 tasks.named('test') {
